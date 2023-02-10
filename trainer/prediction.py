@@ -1,12 +1,12 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModelForSeq2SeqLM, BertTokenizer
 import os
-import nltk
+# import nltk
 import readline
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 
-saved_model_path = "../models/checkpoint-36000"
+saved_model_path = "../models/checkpoint-9000"
 tokenizer = AutoTokenizer.from_pretrained(saved_model_path)
 model = AutoModelForSeq2SeqLM.from_pretrained(saved_model_path)
     
