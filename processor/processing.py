@@ -7,12 +7,16 @@ from datasets import load_dataset, Dataset, concatenate_datasets
 import random
 from zhconv import convert
 from LAC import LAC
-from pronunciating import PronunciationRetrieval
+# from pronunciating import PronunciationRetrieval
+from random import shuffle
+import copy
 
 
 MAX_SAMPLE_NUM = 3
 MAX_NGRAM_SAMPLE_NUM = 3
+MAX_SHUFFLE_NUM = 4
 SAMPLE_RATIO = 0.1
+SHUFFLE_SAMPLE_RATIO = 0.15
 SAME_TOPK = 20
 SIMILAR_TOPK = 10
 seg = LAC(mode='seg')
@@ -167,6 +171,51 @@ def replace_confused_word(text, ngram):
         return replace_text
     else:
         return None
+
+
+def del_confused_word(words):
+    # 在 原 始 句 子 中 删 除 部 分 词 组 中 的 词
+    word_num = len([word for word in words if len(word) > 1])
+    delelte_num = math.ceil(word_num * SAMPLE_RATIO)
+    selected_num = min(delelte_num, MAX_DELETE_NUM)
+
+    ngram_word_indices = [wid for wid, word in enumerate(words) if len(word) > 1]
+    selected_indices = random.sample(ngram_word_indices, selected_num)
+
+    replace_words = copy.deepcopy(words)
+    for index in selected_indices:
+        selected_word = replace_words[index]
+        chars_list = list(selected_word)
+        del_index = random.choice(range(len(chars_list)))
+        chars_list.pop(del_index)
+        replace_word = "".join(chars_list)
+        replace_words[index] = replace_word
+    replace_text = "".join(replace_words)
+    return replace_text
+
+
+def shuffle_confused_words(words):
+    # 随机打乱ngram的词序
+    word_num = len([word for word in words if len(word) > 1])
+    shuffle_num = math.ceil(word_num * SHUFFLE_SAMPLE_RATIO)
+    selected_num = min(shuffle_num, MAX_SHUFFLE_NUM)
+
+    ngram_word_indices = [wid for wid, word in enumerate(words) if len(word) > 1]
+    selected_indices = random.sample(ngram_word_indices, selected_num)
+
+    replace_words = copy.deepcopy(words)
+    for index in selected_indices:
+        selected_word = replace_words[index]
+        chars_list = list(selected_word)
+
+        if len(chars_list) == 2:
+            chars_list = [chars_list[1], chars_list[0]]
+        else:
+            shuffle(chars_list)
+        replace_word = "".join(chars_list)
+        replace_words[index] = replace_word
+    replace_text = "".join(replace_words)
+    return replace_text
     
 
 # 加载同音字和近音字检索模块
@@ -226,6 +275,13 @@ def add_confused_to_text(examples):
             if ngram_source is not None:
                 res['target'].append(p)
                 res['source'].append(ngram_source)
+
+        # 打乱ngram的汉词
+        shuffle_times = 2
+        for _ in range(shuffle_times):
+            shuffle_source = shuffle_confused_words(words)
+            res['target'].append(p)
+            res['source'].append(shuffle_source)
     return res
 
 
