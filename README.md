@@ -23,10 +23,10 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
 def correct(text, max_length):
-		model_inputs = tokenizer(text, 
-                           	 max_length=max_length, 
-                           	 truncation=True, 
-                           	 return_tensors="pt").to(device)
+    model_inputs = tokenizer(text, 
+                             max_length=max_length, 
+                             truncation=True, 
+                             return_tensors="pt").to(device)
     output = model.generate(**model_inputs, 
                               num_beams=5,
                               no_repeat_ngram_size=4,
