@@ -277,6 +277,7 @@ def add_confused_to_text(examples):
                 res['source'].append(ngram_source)
 
         # 打乱ngram的汉词
+        words = seg.run(p)
         shuffle_times = 2
         for _ in range(shuffle_times):
             shuffle_source = shuffle_confused_words(words)
